@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Files{% endblock %}
+{% block step1_class %}done{% endblock %}
+{% block step2_class %}done{% endblock %}
+{% block step3_class %}done{% endblock %}
+{% block step4_class %}active{% endblock %}
+
+{% block content %}
+<section class="stage-section">
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="ph ph-folder-open"></i>
+            </div>
+            <h1>File Browser</h1>
+            <p class="card-subtitle">Internal Document Repository</p>
+        </div>
+
+        {% if content is not none %}
+        <!-- File Content View -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+                <span class="terminal-title">{{ filename }}</span>
+            </div>
+            <div class="terminal-body">
+                <pre class="file-content">{{ content }}</pre>
+            </div>
+        </div>
+
+        <!-- Flag submission form (always visible on file viewer) -->
+        <div class="flag-submit-section">
+            <form method="POST" action="{{ url_for('check_flag') }}">
+                <div class="input-group inline-group">
+                    <input type="text" name="flag" id="flag" placeholder="Submit the flag here..." autocomplete="off">
+                    <button type="submit" class="btn-primary">
+                        <i class="ph ph-flag-banner"></i>
+                        <span>Submit</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="action-panel">
+            <a href="{{ url_for('files') }}" class="btn-secondary">
+                <i class="ph ph-arrow-left"></i>
+                <span>Back to File List</span>
+            </a>
+        </div>
+
+        {% else %}
+        <!-- File Listing -->
+        <div class="file-list">
+            {% if files %}
+            {% for f in files %}
+            <a href="{{ url_for('files', name=f) }}" class="file-item">
+                <i class="ph ph-file-text"></i>
+                <span>{{ f }}</span>
+                <i class="ph ph-arrow-right"></i>
+            </a>
+            {% endfor %}
+            {% else %}
+            <p class="empty-state">No files available.</p>
+            {% endif %}
+        </div>
+
+        <div class="action-panel">
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">
+                <i class="ph ph-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Hint Banner -->
+    <div class="hint-banner">
+        <i class="ph ph-lightbulb"></i>
+        <span>Stage 4: Notice the <code>?name=</code> parameter in the URL.
+            The server reads files from a directory using this parameter. What if
+            you change it to traverse up? Try
+            <code>../secret/flag.txt</code> as the filename. The developer never
+            sanitized the path.</span>
+    </div>
+</section>
+{% endblock %}
