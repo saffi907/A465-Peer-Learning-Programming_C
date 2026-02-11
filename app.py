@@ -20,6 +20,7 @@ from flask import (
 app = Flask(__name__)
 app.secret_key = "SUPERSECRETKEY_d3v_0nly"
 app.config["FLAG_PATH"] = "secret/flag.txt"
+app.config["FILES_ENDPOINT"] = "/files"
 
 # Simulated "database" of registered users
 USERS = {
@@ -44,12 +45,6 @@ def api_debug():
         "app_name": "VulnChain Internal Portal",
         "version": "0.9.3-dev",
         "debug": True,
-        "secret_key": app.secret_key,
-        "database": {
-            "host": "localhost",
-            "user": "admin",
-            "password": "admin_p@ss!",
-        },
         "hidden_endpoint": "/register",
         "note": "TODO: remove this endpoint before production deployment",
     })
