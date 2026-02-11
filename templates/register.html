@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block step1_class %}done{% endblock %}
+{% block step2_class %}active{% endblock %}
+
+{% block content %}
+<section class="stage-section">
+    <div class="login-card">
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="ph ph-user-plus"></i>
+            </div>
+            <h1>Create Account</h1>
+            <p class="card-subtitle">Internal Registration Portal</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}" id="register-form">
+            <div class="input-group">
+                <label for="username">
+                    <i class="ph ph-user"></i>
+                    Username
+                </label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" autocomplete="off"
+                    required>
+            </div>
+            <div class="input-group">
+                <label for="password">
+                    <i class="ph ph-key"></i>
+                    Password
+                </label>
+                <input type="password" id="password" name="password" placeholder="Choose a password" autocomplete="off"
+                    required>
+            </div>
+            <!-- No role field visible in the form -->
+            <button type="submit" class="btn-primary">
+                <i class="ph ph-user-plus"></i>
+                <span>Register</span>
+            </button>
+        </form>
+
+        <div class="card-footer">
+            <span>Already have an account?</span>
+            <a href="{{ url_for('index') }}" class="footer-link">Log in</a>
+        </div>
+    </div>
+
+    <!-- Hint Banner -->
+    <div class="hint-banner">
+        <i class="ph ph-lightbulb"></i>
+        <span>Stage 2: This form only shows two fields, but does the server
+            validate <em>which</em> fields it accepts? Open DevTools (F12), find
+            the form in the <strong>Elements</strong> tab, and try adding a hidden
+            input: <code>&lt;input name="role" value="admin"&gt;</code></span>
+    </div>
+</section>
+{% endblock %}
