@@ -177,6 +177,15 @@ def announce():
 
 @app.route("/files")
 def files():
+    username = session.get("username")
+    role = session.get("role")
+    if not username:
+        flash("Please log in first.")
+        return redirect(url_for("index"))
+    if role != "admin":
+        flash("Access denied. Admin privileges required.")
+        return redirect(url_for("dashboard"))
+
     name = request.args.get("name", "")
 
     if not name:
