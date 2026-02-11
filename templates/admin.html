@@ -1,110 +1,76 @@
 {% extends "base.html" %}
 {% block title %}Admin Panel{% endblock %}
+{% block step1_class %}done{% endblock %}
+{% block step2_class %}done{% endblock %}
+{% block step3_class %}active{% endblock %}
 
 {% block content %}
-<section class="page-center">
-    <div class="dashboard-card wide">
-        <!-- Header -->
+<section class="stage-section">
+    <div class="dashboard-card">
         <div class="card-header">
-            <div class="logo-mark admin-mark">
-                <i class="ph ph-crown"></i>
+            <div class="card-icon">
+                <i class="ph ph-shield-check"></i>
             </div>
-            <h1 class="card-title">Admin Panel</h1>
-            <p class="card-subtitle">Clearance Level: <strong class="text-red">Elevated</strong></p>
+            <h1>Admin Panel</h1>
+            <p class="card-subtitle">Welcome, {{ username }}</p>
         </div>
 
-        <!-- Stage tracker -->
-        <div class="stage-tracker">
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Recon</span>
-            </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Escalate</span>
-            </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step active">
-                <span class="step-num">3</span>
-                <span class="step-label">Decrypt</span>
-            </div>
-            <div class="tracker-line-h"></div>
-            <div class="tracker-step">
-                <span class="step-num">4</span>
-                <span class="step-label">Capture</span>
-            </div>
-        </div>
-
-        <!-- System log with Caesar cipher clue -->
+        <!-- Announcement Feature -->
         <div class="terminal-window">
-            <div class="terminal-bar">
-                <div class="terminal-dots">
-                    <span class="td red"></span>
-                    <span class="td yellow"></span>
-                    <span class="td green"></span>
-                </div>
-                <span class="terminal-title">System Log // /var/log/cryptochain.log</span>
+            <div class="terminal-header">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+                <span class="terminal-title">System Announcements</span>
             </div>
             <div class="terminal-body">
-                <div class="term-line">
-                    <span class="term-ts">[2026-02-10 03:14:07]</span>
-                    <span class="term-info">INFO</span>
-                    System boot sequence completed.
+                <form method="POST" action="{{ url_for('announce') }}">
+                    <div class="input-group">
+                        <label for="content">
+                            <i class="ph ph-megaphone"></i>
+                            Post Announcement
+                        </label>
+                        <textarea id="content" name="content" rows="3" placeholder="Type your announcement here..."
+                            class="announcement-input">{{ raw_input if raw_input else '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="ph ph-paper-plane-tilt"></i>
+                        <span>Publish</span>
+                    </button>
+                </form>
+
+                {% if announcement %}
+                <div class="announcement-output">
+                    <div class="output-label">
+                        <i class="ph ph-terminal"></i> Rendered Output:
+                    </div>
+                    <div class="output-content">{{ announcement | safe }}</div>
                 </div>
-                <div class="term-line">
-                    <span class="term-ts">[2026-02-10 03:14:08]</span>
-                    <span class="term-info">INFO</span>
-                    Authentication service started on port 5000.
-                </div>
-                <div class="term-line">
-                    <span class="term-ts">[2026-02-10 03:14:09]</span>
-                    <span class="term-warn-text">WARN</span>
-                    Plaintext cookie auth detected. Consider upgrading.
-                </div>
-                <div class="term-line">
-                    <span class="term-ts">[2026-02-10 03:15:22]</span>
-                    <span class="term-info">INFO</span>
-                    Admin session initialized.
-                </div>
-                <div class="term-line highlight">
-                    <span class="term-ts">[2026-02-10 03:15:23]</span>
-                    <span class="term-danger-text">SECRET</span>
-                    <span class="cipher-text">{{ caesar_cipher }}</span>
-                </div>
-                <div class="term-line">
-                    <span class="term-ts">[2026-02-10 03:15:24]</span>
-                    <span class="term-info">INFO</span>
-                    End of log.
-                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Hint for Stage 3 -->
-        <div class="hint-banner cipher-hint">
-            <i class="ph ph-detective"></i>
-            <div>
-                <span>Stage 3: The highlighted log entry contains an encrypted message.</span>
-                <br>
-                <span class="hint-detail">
-                    The emperor's favorite shift was <strong>3</strong>.
-                    Try a Caesar cipher decoder: <a href="https://www.dcode.fr/caesar-cipher" target="_blank"
-                        rel="noopener">dcode.fr/caesar-cipher</a>
-                </span>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="btn-row">
-            <a href="{{ url_for('dashboard') }}" class="btn-ghost">
+        <div class="action-panel">
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">
                 <i class="ph ph-arrow-left"></i>
                 <span>Back to Dashboard</span>
             </a>
-            <a href="{{ url_for('logout') }}" class="btn-ghost">
-                <i class="ph ph-sign-out"></i>
-                <span>Log Out</span>
+            <a href="{{ url_for('files') }}" class="btn-secondary">
+                <i class="ph ph-folder-open"></i>
+                <span>File Browser</span>
             </a>
         </div>
+    </div>
+
+    <!-- Hint Banner -->
+    <div class="hint-banner">
+        <i class="ph ph-lightbulb"></i>
+        <span>Stage 3: This announcement feature renders your input on the
+            <em>server</em>. This app uses <strong>Jinja2</strong> templates.
+            What happens if you type template syntax like
+            <code>{{ "{{ 7*7 }}" }}</code>? If that works, try
+            <code>{{ "{{ config.items() }}" }}</code> to see what secrets the
+            server is hiding.</span>
     </div>
 </section>
 {% endblock %}
