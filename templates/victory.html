@@ -1,96 +1,120 @@
 {% extends "base.html" %}
 {% block title %}Victory{% endblock %}
+{% block step1_class %}done{% endblock %}
+{% block step2_class %}done{% endblock %}
+{% block step3_class %}done{% endblock %}
+{% block step4_class %}done{% endblock %}
 
 {% block content %}
-<section class="page-center">
+<section class="stage-section">
     <div class="victory-card">
-        <!-- Confetti-style accent -->
-        <div class="victory-glow" aria-hidden="true"></div>
-
-        <!-- Header -->
         <div class="card-header">
-            <div class="logo-mark victory-mark">
+            <div class="card-icon victory-icon">
                 <i class="ph ph-trophy"></i>
             </div>
-            <h1 class="card-title victory-title">Mission Complete</h1>
-            <p class="card-subtitle">You decoded every layer. The chain is broken.</p>
+            <h1>Mission Complete</h1>
+            <p class="card-subtitle">All vulnerabilities exploited</p>
         </div>
 
-        <!-- All stages completed -->
-        <div class="stage-tracker">
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Recon</span>
-            </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Escalate</span>
-            </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Decrypt</span>
-            </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Capture</span>
-            </div>
-        </div>
-
-        <!-- Captured flag -->
-        <div class="flag-reveal">
+        <div class="flag-display">
             <span class="flag-label">Captured Flag</span>
-            <span class="flag-value">{{ flag }}</span>
+            <code class="flag-value">{{ flag }}</code>
         </div>
 
-        <!-- Attack chain recap -->
+        <!-- Vulnerability Recap -->
         <div class="recap-section">
-            <h2 class="recap-title">
-                <i class="ph ph-list-checks"></i>
-                Attack Chain Recap
-            </h2>
-            <div class="recap-grid">
-                <div class="recap-card">
-                    <div class="recap-num">01</div>
-                    <div class="recap-info">
-                        <h3>Information Disclosure</h3>
-                        <p>Base64-encoded credentials hidden in an HTML comment.</p>
-                        <span class="recap-fix">Fix: Remove sensitive data from source code and comments.</span>
+            <h2><i class="ph ph-shield-warning"></i> Vulnerability Recap</h2>
+
+            <div class="recap-item">
+                <div class="recap-header">
+                    <span class="recap-stage">Stage 1</span>
+                    <span class="recap-title">Information Disclosure</span>
+                </div>
+                <div class="recap-body">
+                    <div class="recap-vuln">
+                        <strong>Vulnerability:</strong> A debug API endpoint
+                        (<code>/api/debug</code>) was left in production,
+                        leaking secret keys, database credentials, and
+                        internal routes.
+                    </div>
+                    <div class="recap-fix">
+                        <strong>Fix:</strong> Remove all debug/development
+                        endpoints before deployment. Store secrets in
+                        environment variables, never in code. Use feature
+                        flags to gate debug functionality.
                     </div>
                 </div>
-                <div class="recap-card">
-                    <div class="recap-num">02</div>
-                    <div class="recap-info">
-                        <h3>Broken Access Control</h3>
-                        <p>Role stored in a plaintext cookie, trivially editable by the user.</p>
-                        <span class="recap-fix">Fix: Use server-side sessions or signed tokens for authorization.</span>
+            </div>
+
+            <div class="recap-item">
+                <div class="recap-header">
+                    <span class="recap-stage">Stage 2</span>
+                    <span class="recap-title">Mass Assignment</span>
+                </div>
+                <div class="recap-body">
+                    <div class="recap-vuln">
+                        <strong>Vulnerability:</strong> The registration
+                        handler blindly accepted all form fields, allowing
+                        an attacker to inject a <code>role=admin</code>
+                        parameter and escalate privileges.
+                    </div>
+                    <div class="recap-fix">
+                        <strong>Fix:</strong> Whitelist accepted input
+                        fields on the server. Only extract the specific
+                        fields you expect (<code>username</code>,
+                        <code>password</code>). Never trust client-submitted
+                        data.
                     </div>
                 </div>
-                <div class="recap-card">
-                    <div class="recap-num">03</div>
-                    <div class="recap-info">
-                        <h3>Security Through Obscurity</h3>
-                        <p>Sensitive endpoint protected only by a weak Caesar cipher "hint."</p>
-                        <span class="recap-fix">Fix: Require proper authentication on all endpoints. Never rely on URL
-                            secrecy.</span>
+            </div>
+
+            <div class="recap-item">
+                <div class="recap-header">
+                    <span class="recap-stage">Stage 3</span>
+                    <span class="recap-title">Server-Side Template Injection</span>
+                </div>
+                <div class="recap-body">
+                    <div class="recap-vuln">
+                        <strong>Vulnerability:</strong> User input was
+                        passed directly to
+                        <code>render_template_string()</code>, allowing
+                        Jinja2 template expressions to execute on the
+                        server and leak configuration secrets.
+                    </div>
+                    <div class="recap-fix">
+                        <strong>Fix:</strong> Never pass raw user input to
+                        a template engine. Use <code>render_template()</code>
+                        with separate template files. Escape all user
+                        input. Consider sandboxing the template environment.
                     </div>
                 </div>
-                <div class="recap-card">
-                    <div class="recap-num">04</div>
-                    <div class="recap-info">
-                        <h3>Weak Data Encoding</h3>
-                        <p>Flag "encrypted" with hex encoding, which is trivially reversible.</p>
-                        <span class="recap-fix">Fix: Use real encryption (AES-256) for sensitive data. Encoding is not
-                            encryption.</span>
+            </div>
+
+            <div class="recap-item">
+                <div class="recap-header">
+                    <span class="recap-stage">Stage 4</span>
+                    <span class="recap-title">Path Traversal</span>
+                </div>
+                <div class="recap-body">
+                    <div class="recap-vuln">
+                        <strong>Vulnerability:</strong> The file browser
+                        concatenated user input directly into a file path
+                        without sanitization, allowing
+                        <code>../</code> sequences to read files outside
+                        the intended directory.
+                    </div>
+                    <div class="recap-fix">
+                        <strong>Fix:</strong> Sanitize file paths with
+                        <code>os.path.basename()</code> to strip directory
+                        components. Use an allowlist of permitted files.
+                        Validate that the resolved path stays within the
+                        intended directory.
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Actions -->
-        <div class="btn-row center">
+        <div class="action-panel">
             <a href="{{ url_for('index') }}" class="btn-primary">
                 <i class="ph ph-arrow-counter-clockwise"></i>
                 <span>Play Again</span>
