@@ -1,85 +1,77 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
+{% block step1_class %}done{% endblock %}
+{% block step2_class %}{% if role == 'admin' %}done{% else %}active{% endif %}{% endblock %}
+{% block step3_class %}{% if role == 'admin' %}active{% endif %}{% endblock %}
 
 {% block content %}
-<section class="page-center">
+<section class="stage-section">
     <div class="dashboard-card">
-        <!-- Header -->
         <div class="card-header">
-            <div class="logo-mark">
-                <i class="ph ph-terminal-window"></i>
+            <div class="card-icon">
+                <i class="ph ph-gauge"></i>
             </div>
-            <h1 class="card-title">Agent Dashboard</h1>
-            <p class="card-subtitle">Welcome back, <strong>{{ username }}</strong></p>
+            <h1>Dashboard</h1>
+            <p class="card-subtitle">Welcome, {{ username }}</p>
         </div>
 
-        <!-- Stage tracker -->
-        <div class="stage-tracker">
-            <div class="tracker-step completed">
-                <span class="step-num"><i class="ph ph-check"></i></span>
-                <span class="step-label">Recon</span>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">User</span>
+                <span class="info-value">{{ username }}</span>
             </div>
-            <div class="tracker-line-h done"></div>
-            <div class="tracker-step active">
-                <span class="step-num">2</span>
-                <span class="step-label">Escalate</span>
+            <div class="info-item">
+                <span class="info-label">Role</span>
+                <span class="info-value role-tag {% if role == 'admin' %}role-admin{% endif %}">{{ role }}</span>
             </div>
-            <div class="tracker-line-h"></div>
-            <div class="tracker-step">
-                <span class="step-num">3</span>
-                <span class="step-label">Decrypt</span>
-            </div>
-            <div class="tracker-line-h"></div>
-            <div class="tracker-step">
-                <span class="step-num">4</span>
-                <span class="step-label">Capture</span>
+            <div class="info-item">
+                <span class="info-label">Session</span>
+                <span class="info-value status-active">Active</span>
             </div>
         </div>
 
-        <!-- Status panel -->
-        <div class="status-panel">
-            <div class="status-row">
-                <span class="status-label"><i class="ph ph-user"></i> User</span>
-                <span class="status-value">{{ username }}</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label"><i class="ph ph-shield-check"></i> Role</span>
-                <span class="status-value role-tag">{{ role }}</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label"><i class="ph ph-cookie"></i> Auth Method</span>
-                <span class="status-value cookie-tag">Plaintext Cookie</span>
-            </div>
-        </div>
-
-        <!-- Hint for Stage 2 -->
-        <div class="hint-banner warn">
-            <i class="ph ph-lightbulb"></i>
-            <span>Stage 2: Your role is stored as a browser cookie. Can you change it? Open DevTools
-                (F12) and check <code>Application &gt; Cookies</code>.</span>
-        </div>
-
-        <!-- Access denied message for non-admins -->
-        {% if role != "admin" %}
-        <div class="access-block">
-            <div class="access-icon"><i class="ph ph-lock"></i></div>
-            <p>The <strong>Admin Panel</strong> requires admin privileges.</p>
-            <a href="{{ url_for('admin_panel') }}" class="btn-secondary">
-                <i class="ph ph-shield-warning"></i>
-                <span>Attempt Admin Access</span>
+        {% if role == 'admin' %}
+        <div class="action-panel">
+            <a href="{{ url_for('admin_panel') }}" class="btn-primary">
+                <i class="ph ph-shield-check"></i>
+                <span>Open Admin Panel</span>
+            </a>
+            <a href="{{ url_for('files') }}" class="btn-secondary">
+                <i class="ph ph-folder-open"></i>
+                <span>File Browser</span>
             </a>
         </div>
         {% else %}
-        <a href="{{ url_for('admin_panel') }}" class="btn-primary full-width">
-            <i class="ph ph-crown"></i>
-            <span>Enter Admin Panel</span>
-        </a>
+        <div class="action-panel">
+            <a href="{{ url_for('files') }}" class="btn-secondary">
+                <i class="ph ph-folder-open"></i>
+                <span>File Browser</span>
+            </a>
+        </div>
         {% endif %}
 
-        <a href="{{ url_for('logout') }}" class="btn-ghost">
-            <i class="ph ph-sign-out"></i>
-            <span>Log Out</span>
-        </a>
+        <div class="card-footer">
+            <a href="{{ url_for('logout') }}" class="footer-link">
+                <i class="ph ph-sign-out"></i> Log out
+            </a>
+        </div>
     </div>
+
+    {% if role != 'admin' %}
+    <!-- Hint Banner -->
+    <div class="hint-banner">
+        <i class="ph ph-lightbulb"></i>
+        <span>Stage 2: You're logged in as <strong>{{ role }}</strong>.
+            The admin panel requires the <code>admin</code> role. Did you find
+            the hidden registration endpoint from Stage 1? Can you register
+            with elevated privileges?</span>
+    </div>
+    {% else %}
+    <div class="hint-banner hint-success">
+        <i class="ph ph-check-circle"></i>
+        <span>You have admin access. Head to the
+            <strong>Admin Panel</strong> to continue.</span>
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
