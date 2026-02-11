@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}The Vault{% endblock %}
+
+{% block content %}
+<section class="page-center">
+    <div class="dashboard-card wide">
+        <!-- Header -->
+        <div class="card-header">
+            <div class="logo-mark vault-mark">
+                <i class="ph ph-vault"></i>
+            </div>
+            <h1 class="card-title">The Vault</h1>
+            <p class="card-subtitle">You found the hidden endpoint. One last step remains.</p>
+        </div>
+
+        <!-- Stage tracker -->
+        <div class="stage-tracker">
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Recon</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Escalate</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Decrypt</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step active">
+                <span class="step-num">4</span>
+                <span class="step-label">Capture</span>
+            </div>
+        </div>
+
+        <!-- Hex flag display -->
+        <div class="terminal-window">
+            <div class="terminal-bar">
+                <div class="terminal-dots">
+                    <span class="td red"></span>
+                    <span class="td yellow"></span>
+                    <span class="td green"></span>
+                </div>
+                <span class="terminal-title">Vault Contents // Encrypted Flag</span>
+            </div>
+            <div class="terminal-body">
+                <div class="term-line">
+                    <span class="term-prompt">&gt;</span>
+                    <span class="term-comment">// Encrypted flag (hex-encoded ASCII):</span>
+                </div>
+                <div class="term-line">
+                    <span class="term-prompt">&gt;</span>
+                    <span class="hex-string">{{ flag_hex }}</span>
+                </div>
+                <div class="term-line">
+                    <span class="term-prompt">&gt;</span>
+                    <span class="term-comment">// Decode this hex string to capture the flag.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hint for Stage 4 -->
+        <div class="hint-banner final-hint">
+            <i class="ph ph-hexagon"></i>
+            <div>
+                <span>Stage 4: The flag is hex-encoded. Convert it to ASCII text.</span>
+                <br>
+                <span class="hint-detail">
+                    Try: <a href="https://www.rapidtables.com/convert/number/hex-to-ascii.html" target="_blank"
+                        rel="noopener">rapidtables.com/hex-to-ascii</a>
+                    or <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener">CyberChef</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Flag submission form -->
+        <form action="{{ url_for('check_flag') }}" method="POST" class="flag-form">
+            <div class="input-group">
+                <label for="flag">
+                    <i class="ph ph-flag-banner"></i>
+                    Submit Decoded Flag
+                </label>
+                <input type="text" id="flag" name="flag" placeholder="FLAG{...}" autocomplete="off" required>
+            </div>
+            <button type="submit" class="btn-primary">
+                <span>Capture the Flag</span>
+                <i class="ph ph-flag-checkered"></i>
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}
