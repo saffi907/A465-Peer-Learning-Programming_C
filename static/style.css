@@ -1,5 +1,5 @@
 /* ============================================================
-   CRYPTOCHAIN // BROWSER-ONLY CRYPTOGRAPHY CTF
+   VULNCHAIN // BROWSER-ONLY SOFTWARE VULNERABILITY CTF
    Design: Tech Forward / Dark Terminal / Precision
    ============================================================ */
 
@@ -908,6 +908,397 @@ code {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* ---- LAYOUT ---- */
+.layout {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0, 240, 255, 0.03), transparent),
+        radial-gradient(ellipse 40% 30% at 30% 70%, rgba(139, 92, 246, 0.02), transparent);
+}
+
+.stage-section {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ---- CARD ICON ---- */
+.card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--cyan-dim);
+    border: 1px solid var(--border-accent);
+    font-size: 1.6rem;
+    color: var(--cyan);
+    margin: 0 auto 1rem;
+}
+
+.card-icon.victory-icon {
+    background: var(--green-dim);
+    border-color: rgba(0, 255, 136, 0.3);
+    color: var(--green);
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.card-header h1 {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.25rem;
+}
+
+/* ---- INFO GRID (Dashboard) ---- */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.info-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem;
+    text-align: center;
+}
+
+.info-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+}
+
+.info-value {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.role-admin {
+    color: var(--green);
+}
+
+.status-active {
+    color: var(--green);
+}
+
+/* ---- ACTION PANEL ---- */
+.action-panel {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* ---- TERMINAL HEADER (dot classes) ---- */
+.terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #28c840; }
+
+/* ---- ANNOUNCEMENT (Admin SSTI) ---- */
+.announcement-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.announcement-input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+
+.announcement-output {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.output-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+}
+
+.output-label i {
+    color: var(--green);
+}
+
+.output-content {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--green);
+    word-break: break-all;
+    line-height: 1.6;
+}
+
+.output-content .error {
+    color: var(--red);
+}
+
+/* ---- FILE BROWSER ---- */
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: border-color 0.3s, background 0.2s;
+}
+
+.file-item:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-elevated);
+    text-decoration: none;
+}
+
+.file-item i:first-child {
+    color: var(--cyan);
+    font-size: 1.1rem;
+}
+
+.file-item span {
+    flex: 1;
+}
+
+.file-item i:last-child {
+    color: var(--text-faint);
+    font-size: 0.8rem;
+}
+
+.file-content {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.7;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.9rem;
+    padding: 2rem;
+}
+
+/* ---- FLAG SUBMISSION ---- */
+.flag-submit-section {
+    margin-top: 1rem;
+}
+
+.inline-group {
+    flex-direction: row;
+    gap: 0.5rem;
+}
+
+.inline-group input {
+    flex: 1;
+}
+
+/* ---- FLAG DISPLAY (Victory) ---- */
+.flag-display {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--green-dim);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+}
+
+.flag-display::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0, 255, 136, 0.05), transparent);
+    pointer-events: none;
+}
+
+/* ---- RECAP ITEMS (Victory) ---- */
+.recap-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.recap-section h2 i {
+    color: var(--cyan);
+}
+
+.recap-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.3s;
+}
+
+.recap-item:hover {
+    border-color: var(--border-accent);
+}
+
+.recap-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+}
+
+.recap-stage {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.recap-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.recap-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.recap-vuln strong,
+.recap-fix strong {
+    color: var(--text-primary);
+}
+
+.recap-fix {
+    color: var(--green);
+    opacity: 0.85;
+}
+
+/* ---- HINT SUCCESS ---- */
+.hint-success {
+    background: var(--green-dim);
+    border-color: rgba(0, 255, 136, 0.25);
+}
+
+.hint-success i {
+    color: var(--green);
+}
+
+/* ---- FOOTER LINK ---- */
+.footer-link {
+    color: var(--cyan);
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ---- FLASH MESSAGES (updated) ---- */
+.flash-message {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 1.2rem;
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 59, 92, 0.3);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.4s, transform 0.4s;
+}
+
+.flash-message i {
+    color: var(--red);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* ---- DONE step class ---- */
+.tracker-step.done .step-num {
+    background: var(--green-dim);
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.tracker-step.done .step-label {
+    color: var(--green);
 }
 
 /* ---- RESPONSIVE ---- */
