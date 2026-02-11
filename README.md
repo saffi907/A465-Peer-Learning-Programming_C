@@ -1,127 +1,110 @@
-# CryptoChain -- Browser-Only Multi-Stage Cryptography CTF
+# VulnChain -- Browser-Only Software Vulnerability CTF
 
 > A deliberately vulnerable Flask app for **CSCE A465 -- Computer & Network Security**.
 > Every vulnerability is exploitable using only a web browser and free online tools.
->
-> **DO NOT** deploy this application on any network-accessible host.
 
----
+> **WARNING:** This application is intentionally insecure.
+> **DO NOT** deploy this application on any network-accessible host.
 
 ## Quick Start
 
 ```bash
-cd new
 pip install flask
 python app.py
 ```
 
 Open **http://127.0.0.1:5000** in your browser.
 
----
-
 ## Attack Chain Walkthrough
 
 ```
-+-----------------+     +------------------+     +-------------------+     +-----------------+
-| 1. RECON        |---->| 2. ESCALATE      |---->| 3. DECRYPT        |---->| 4. CAPTURE      |
-|                 |     |                  |     |                   |     |                 |
-| HTML comment    |     | Cookie tamper    |     | Caesar cipher     |     | Hex-to-ASCII    |
-| + Base64 decode |     | role=user->admin |     | reveals hidden URL|     | decode the flag  |
-+-----------------+     +------------------+     +-------------------+     +-----------------+
++-------------------+     +-------------------+     +--------------------+     +------------------+
+| 1. RECON          |---->| 2. ESCALATE       |---->| 3. INJECT          |---->| 4. EXFILTRATE    |
+|                   |     |                   |     |                    |     |                  |
+| JS source reveals |     | Mass assignment   |     | Server-Side        |     | Path traversal   |
+| debug endpoint    |     | adds role=admin   |     | Template Injection |     | reads flag file  |
++-------------------+     +-------------------+     +--------------------+     +------------------+
 ```
 
-### Stage 1 -- Information Disclosure (Base64)
+### Stage 1: Information Disclosure
 
-1. Open **http://127.0.0.1:5000** in your browser
-2. Right-click anywhere on the login page, select **View Page Source**
-3. Near the top, find the HTML comment containing a Base64 string
-4. Copy the string and decode it at [base64decode.org](https://www.base64decode.org/)
-5. It reveals `username:password` -- use these to log in
+1. Open the login page at `http://127.0.0.1:5000`.
+2. Open DevTools (F12) and go to the **Sources** tab.
+3. Open `app.js` and find the comment revealing `/api/debug`.
+4. Visit `http://127.0.0.1:5000/api/debug` in your browser.
+5. The JSON response leaks the secret key, database credentials, and a hidden endpoint: `/register`.
 
-**Vulnerability:** Sensitive credentials left in HTML comments.
-**Fix:** Strip all comments and debug data from production code.
+**Vulnerability:** Debug/development endpoints left in production code.
 
-### Stage 2 -- Broken Access Control (Cookie Tampering)
+### Stage 2: Mass Assignment
 
-1. After logging in, you land on the User Dashboard with `role: user`
-2. Open **DevTools** (F12) and go to **Application** > **Cookies**
-3. Find the `role` cookie (currently set to `user`)
-4. Change its value to `admin`
-5. Refresh the page -- you now have admin access
+1. Visit the hidden registration page at `/register`.
+2. Open DevTools (F12) and find the `<form>` in the Elements tab.
+3. Add a hidden input: `<input name="role" value="admin">` inside the form.
+4. Fill in a username and password, then submit.
+5. Log in with your new admin account.
 
-**Vulnerability:** Authorization based on a client-controlled plaintext cookie.
-**Fix:** Use server-side sessions or cryptographically signed tokens.
+**Vulnerability:** The server blindly accepts all form fields without validating which ones are allowed.
 
-### Stage 3 -- Security Through Obscurity (Caesar Cipher)
+### Stage 3: Server-Side Template Injection (SSTI)
 
-1. Click **Enter Admin Panel** (or navigate to `/admin`)
-2. In the System Log, find the highlighted `SECRET` entry
-3. The text is encrypted with a Caesar cipher (shift = 3)
-4. Decode it at [dcode.fr/caesar-cipher](https://www.dcode.fr/caesar-cipher)
-5. The plaintext reveals a hidden URL path -- navigate to it
+1. Navigate to the **Admin Panel** from the dashboard.
+2. In the announcement box, type `{{ 7*7 }}` and submit.
+3. If you see `49` in the rendered output, the server is executing your template code.
+4. Type `{{ config.items() }}` to dump the server's configuration.
+5. Look for `FLAG_PATH` in the output -- it reveals `secret/flag.txt`.
 
-**Vulnerability:** Sensitive endpoints "protected" only by obscure URLs.
-**Fix:** Enforce authentication and authorization on every endpoint.
+**Vulnerability:** User input passed directly to `render_template_string()` without sanitization.
 
-### Stage 4 -- Weak Encoding (Hex to ASCII)
+### Stage 4: Path Traversal
 
-1. On the Vault page, you see a hex-encoded string
-2. Copy the hex and decode it at [rapidtables.com/hex-to-ascii](https://www.rapidtables.com/convert/number/hex-to-ascii.html)
-3. Enter the decoded flag in the input field
-4. Submit to complete the CTF
+1. Go to the **File Browser** from the dashboard.
+2. Notice the URL uses `?name=filename` to load files.
+3. Change the URL to: `/files?name=../secret/flag.txt`
+4. The server reads the flag file and displays its contents.
+5. Submit the flag to win.
 
-**Vulnerability:** Sensitive data "encrypted" with reversible encoding.
-**Fix:** Use real encryption (AES-256). Encoding (Base64, Hex) is not encryption.
+**Vulnerability:** File paths constructed from user input without sanitization, allowing `../` traversal.
 
----
+## Tools Used
 
-## Tools Used (All Free, All Browser-Based)
-
-| Tool | URL | Used For |
-|------|-----|----------|
-| Base64 Decoder | base64decode.org | Stage 1 |
-| Browser DevTools | Built into Chrome/Firefox | Stage 2 |
-| Caesar Cipher Decoder | dcode.fr/caesar-cipher | Stage 3 |
-| Hex to ASCII | rapidtables.com/hex-to-ascii | Stage 4 |
-
----
+| Stage | Tool | Purpose |
+|-------|------|---------|
+| 1 | DevTools (Sources tab) | Read JavaScript source code |
+| 1 | Browser URL bar | Visit the debug API endpoint |
+| 2 | DevTools (Elements tab) | Add a hidden form field |
+| 3 | Browser text input | Inject Jinja2 template syntax |
+| 4 | Browser URL bar | Modify the `?name=` parameter |
 
 ## Project Structure
 
 ```
-new/
-  app.py             <-- Single Flask server (~140 lines)
-  README.md          <-- You are here
-  templates/
-    base.html        <-- Shared layout (dark theme)
-    login.html       <-- Login page (Base64 in HTML comment)
-    dashboard.html   <-- User dashboard (cookie tampering)
-    admin.html       <-- Admin panel (Caesar cipher clue)
-    vault.html       <-- Vault (hex-encoded flag)
-    victory.html     <-- Victory screen + recap
-  static/
-    style.css        <-- Dark terminal theme
+.
+|-- app.py                  # Flask server (all routes + vulnerabilities)
+|-- secret/
+|   +-- flag.txt            # The flag to capture
+|-- static/
+|   |-- app.js              # Stage 1: contains debug endpoint hint
+|   +-- style.css           # Dark terminal theme
+|-- templates/
+|   |-- base.html           # Shared layout
+|   |-- login.html          # Login page (Stage 1 hint)
+|   |-- register.html       # Hidden registration (Stage 2)
+|   |-- dashboard.html      # User dashboard
+|   |-- admin.html          # Admin panel (Stage 3 SSTI)
+|   |-- files.html          # File browser (Stage 4)
+|   +-- victory.html        # Win screen with recap
++-- README.md
 ```
-
----
 
 ## Key Takeaways
 
-1. **Never store sensitive data in client-accessible locations.**
-   HTML comments, JavaScript variables, and cookies are all readable by the user.
+1. **Never leave debug endpoints in production.** Remove all development-only routes and use environment variables for configuration.
+2. **Whitelist accepted input fields.** Never blindly accept all client-submitted form data. Explicitly extract only the fields you expect.
+3. **Never pass user input to template engines.** Use `render_template()` with separate template files instead of `render_template_string()`.
+4. **Sanitize all file paths.** Use `os.path.basename()` or an allowlist to prevent directory traversal attacks.
 
-2. **Authorization must be enforced server-side.**
-   Client-side cookies and tokens are attacker-controlled. Always verify on the server.
+## Acknowledgments
 
-3. **Obscurity is not security.**
-   Hidden URLs and weak ciphers do not protect endpoints. Use proper access controls.
-
-4. **Encoding is not encryption.**
-   Base64, hex, and similar encodings are trivially reversible. Use AES or similar for real protection.
-
----
-
-## License
-
-This project is for **educational purposes only** as part of CSCE A465
-(Computer & Network Security) at the University of Alaska Anchorage.
+This project was developed for the CSCE A465 Peer Learning Activity at UAA.
+AI tools (Google Gemini) were used to assist in the development of this application.
