@@ -1,62 +1,68 @@
-# app.py -- CryptoChain: Browser-Only Cryptography CTF
-# ============================================================================
-# EDUCATIONAL DEMO ONLY:
-# This application intentionally demonstrates common security anti-patterns
-# in a controlled localhost environment for CSCE A465.
-#
-# DO NOT deploy this application on any network-accessible host.
-# ============================================================================
+"""
+VulnChain -- Browser-Only Software Vulnerability CTF
+CSCE A465 -- Computer & Network Security
 
-import base64
+WARNING: This application is INTENTIONALLY VULNERABLE.
+         DO NOT deploy on any network-accessible host.
+"""
+
 import os
+import json
 from flask import (
-    Flask, render_template, request, redirect,
-    url_for, make_response, flash
+    Flask, request, session, redirect, url_for,
+    render_template, render_template_string, flash, jsonify,
 )
 
-app = Flask(__name__)
-app.secret_key = "dev-key-not-for-production"
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# Hardcoded users (no database needed)
-# ---------------------------------------------------------------------------
+app = Flask(__name__)
+app.secret_key = "SUPERSECRETKEY_d3v_0nly"
+
+# Simulated "database" of registered users
 USERS = {
-    "agent":   {"password": "shadow42", "role": "user"},
-    "admin":   {"password": "override9", "role": "admin"},
+    "guest": {"password": "guest123", "role": "user"},
 }
 
-# The "secret credentials" hidden as a Base64 comment in login.html
-# agent:shadow42  -->  base64 = YWdlbnQ6c2hhZG93NDI=
-HIDDEN_CREDS_B64 = base64.b64encode(b"agent:shadow42").decode()
+# Flag
+FLAG_TEXT = "FLAG{s0ftwar3_s3cur1ty_A465}"
+FLAG_PATH = "secret/flag.txt"
 
-# Caesar cipher clue (shift = 3) for the hidden vault path
-# Plaintext: "the hidden vault is at /vault/secret-stash"
-# Each letter shifted +3 in the alphabet
-CAESAR_PLAINTEXT = "the hidden vault is at /vault/secret-stash"
-
-def caesar_encrypt(text, shift=3):
-    result = []
-    for ch in text:
-        if ch.isalpha():
-            base = ord('a') if ch.islower() else ord('A')
-            result.append(chr((ord(ch) - base + shift) % 26 + base))
-        else:
-            result.append(ch)
-    return "".join(result)
-
-CAESAR_CIPHERTEXT = caesar_encrypt(CAESAR_PLAINTEXT, 3)
-
-# Hex-encoded flag for the vault
-FLAG_TEXT = "FLAG{cr4ck_th3_c0d3_A465}"
-FLAG_HEX = FLAG_TEXT.encode().hex()
-
+# Directory for downloadable files
+FILES_DIR = os.path.join(os.path.dirname(__file__), "public_files")
 
 # ---------------------------------------------------------------------------
-# Route: Login Page
+# Stage 1  --  Information Disclosure (Debug Endpoint)
 # ---------------------------------------------------------------------------
+
+@app.route("/api/debug")
+def api_debug():
+    """Debug endpoint that should have been removed before production."""
+    return jsonify({
+        "app_name": "VulnChain Internal Portal",
+        "version": "0.9.3-dev",
+        "debug": True,
+        "secret_key": app.secret_key,
+        "database": {
+            "host": "localhost",
+            "user": "admin",
+            "password": "admin_p@ss!",
+        },
+        "hidden_endpoint": "/register",
+        "flag_path": FLAG_PATH,
+        "note": "TODO: remove this endpoint before production deployment",
+    })
+
+# ---------------------------------------------------------------------------
+# Auth Routes
+# ---------------------------------------------------------------------------
+
 @app.route("/")
 def index():
-    return render_template("login.html", hidden_b64=HIDDEN_CREDS_B64)
+    if session.get("username"):
+        return redirect(url_for("dashboard"))
+    return render_template("login.html")
 
 
 @app.route("/login", methods=["POST"])
@@ -66,92 +72,179 @@ def login():
 
     user = USERS.get(username)
     if user and user["password"] == password:
-        # VULNERABILITY: role is stored in a plaintext cookie
-        # The client can freely edit it in DevTools.
-        resp = make_response(redirect(url_for("dashboard")))
-        resp.set_cookie("username", username)
-        resp.set_cookie("role", user["role"])      # <-- the vuln
-        return resp
-    else:
-        flash("Invalid credentials. Try harder.")
-        return redirect(url_for("index"))
+        session["username"] = username
+        session["role"] = user["role"]
+        flash(f"Welcome back, {username}.")
+        return redirect(url_for("dashboard"))
+
+    flash("Invalid credentials. Try again.")
+    return redirect(url_for("index"))
 
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out.")
+    return redirect(url_for("index"))
+
 # ---------------------------------------------------------------------------
-# Route: User Dashboard
+# Stage 2  --  Mass Assignment (Registration)
 # ---------------------------------------------------------------------------
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "GET":
+        return render_template("register.html")
+
+    # --- THE VULNERABILITY ---
+    # Blindly accept every form field the client sends,
+    # including "role" which is not in the visible form.
+    user_data = {key: val for key, val in request.form.items()}
+
+    username = user_data.get("username", "").strip()
+    password = user_data.get("password", "").strip()
+
+    if not username or not password:
+        flash("Username and password are required.")
+        return redirect(url_for("register"))
+
+    if username in USERS:
+        flash("Username already taken.")
+        return redirect(url_for("register"))
+
+    # Default role is "user", but if the client sent role=admin ...
+    role = user_data.get("role", "user")
+
+    USERS[username] = {"password": password, "role": role}
+    flash(f"Account created. You can now log in as '{username}'.")
+    return redirect(url_for("index"))
+
+# ---------------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------------
+
 @app.route("/dashboard")
 def dashboard():
-    username = request.cookies.get("username")
-    role     = request.cookies.get("role")
-
+    username = session.get("username")
+    role = session.get("role")
     if not username:
         flash("Please log in first.")
         return redirect(url_for("index"))
-
     return render_template("dashboard.html", username=username, role=role)
 
+# ---------------------------------------------------------------------------
+# Stage 3  --  Server-Side Template Injection (SSTI)
+# ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# Route: Admin Panel
-# VULNERABILITY: access control relies on the plaintext cookie value.
-# ---------------------------------------------------------------------------
 @app.route("/admin")
 def admin_panel():
-    role = request.cookies.get("role")
-
+    username = session.get("username")
+    role = session.get("role")
+    if not username:
+        flash("Please log in first.")
+        return redirect(url_for("index"))
     if role != "admin":
         flash("Access denied. Admin privileges required.")
         return redirect(url_for("dashboard"))
+    return render_template("admin.html", username=username)
 
-    return render_template(
-        "admin.html",
-        caesar_cipher=CAESAR_CIPHERTEXT,
-    )
 
+@app.route("/admin/announce", methods=["POST"])
+def announce():
+    role = session.get("role")
+    if role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("dashboard"))
+
+    content = request.form.get("content", "")
+
+    # --- THE VULNERABILITY ---
+    # User input is passed directly to render_template_string(),
+    # allowing Jinja2 template expressions to execute on the server.
+    try:
+        rendered = render_template_string(content)
+    except Exception as e:
+        rendered = f"<span class='error'>Template Error: {e}</span>"
+
+    return render_template("admin.html",
+                           username=session.get("username"),
+                           announcement=rendered,
+                           raw_input=content)
 
 # ---------------------------------------------------------------------------
-# Route: The Vault (hidden endpoint discovered via Caesar cipher)
-# VULNERABILITY: security through obscurity -- the URL is the only
-# "protection." Anyone who knows the path can access it.
+# Stage 4  --  Path Traversal (File Viewer)
 # ---------------------------------------------------------------------------
-@app.route("/vault/secret-stash")
-def vault():
-    return render_template("vault.html", flag_hex=FLAG_HEX)
 
+@app.route("/files")
+def files():
+    name = request.args.get("name", "")
 
-@app.route("/vault/check-flag", methods=["POST"])
+    if not name:
+        # Show file listing
+        available = []
+        if os.path.isdir(FILES_DIR):
+            available = os.listdir(FILES_DIR)
+        return render_template("files.html", files=available, content=None)
+
+    # --- THE VULNERABILITY ---
+    # The filename is concatenated directly without sanitization,
+    # allowing directory traversal with ../
+    filepath = os.path.join(FILES_DIR, name)
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        content = f"Error: file '{name}' not found."
+    except Exception as e:
+        content = f"Error reading file: {e}"
+
+    return render_template("files.html", files=[], content=content,
+                           filename=name)
+
+# ---------------------------------------------------------------------------
+# Flag Check
+# ---------------------------------------------------------------------------
+
+@app.route("/check-flag", methods=["POST"])
 def check_flag():
     submitted = request.form.get("flag", "").strip()
     if submitted == FLAG_TEXT:
         return render_template("victory.html", flag=FLAG_TEXT)
-    else:
-        flash("Incorrect flag. Decode the hex string and try again.")
-        return redirect(url_for("vault"))
-
+    flash("Incorrect flag. Try again.")
+    return redirect(url_for("files"))
 
 # ---------------------------------------------------------------------------
-# Route: Logout
+# Boot
 # ---------------------------------------------------------------------------
-@app.route("/logout")
-def logout():
-    resp = make_response(redirect(url_for("index")))
-    resp.delete_cookie("username")
-    resp.delete_cookie("role")
-    return resp
 
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    print()
-    print("=" * 60)
-    print("  CryptoChain -- Browser-Only Cryptography CTF")
+    # Create dummy files for the file browser
+    os.makedirs(FILES_DIR, exist_ok=True)
+    dummy_files = {
+        "report.pdf": "Q3 Internal Security Audit -- CONFIDENTIAL\nNo critical vulnerabilities found.\n(This is a dummy file for demonstration.)",
+        "employees.csv": "id,name,department\n1,Alice,Engineering\n2,Bob,Marketing\n3,Charlie,Security",
+        "changelog.txt": "v0.9.3 - added admin announcement feature\nv0.9.2 - added file browser\nv0.9.1 - initial release",
+    }
+    for fname, fcontent in dummy_files.items():
+        fpath = os.path.join(FILES_DIR, fname)
+        if not os.path.exists(fpath):
+            with open(fpath, "w", encoding="utf-8") as f:
+                f.write(fcontent)
+
+    # Create the flag file
+    os.makedirs("secret", exist_ok=True)
+    flag_file = os.path.join("secret", "flag.txt")
+    if not os.path.exists(flag_file):
+        with open(flag_file, "w", encoding="utf-8") as f:
+            f.write(FLAG_TEXT)
+
+    print("\n" + "=" * 60)
+    print("  VulnChain -- Browser-Only Software Vulnerability CTF")
     print("  http://127.0.0.1:5000")
     print("=" * 60)
     print("  [!] This app is intentionally insecure.")
     print("  [!] For educational use only (CSCE A465).")
-    print("=" * 60)
-    print()
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    print("=" * 60 + "\n")
+
+    app.run(debug=True)
