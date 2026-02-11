@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block content %}
+<section class="page-center">
+    <div class="dashboard-card wide">
+        <!-- Header -->
+        <div class="card-header">
+            <div class="logo-mark admin-mark">
+                <i class="ph ph-crown"></i>
+            </div>
+            <h1 class="card-title">Admin Panel</h1>
+            <p class="card-subtitle">Clearance Level: <strong class="text-red">Elevated</strong></p>
+        </div>
+
+        <!-- Stage tracker -->
+        <div class="stage-tracker">
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Recon</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Escalate</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step active">
+                <span class="step-num">3</span>
+                <span class="step-label">Decrypt</span>
+            </div>
+            <div class="tracker-line-h"></div>
+            <div class="tracker-step">
+                <span class="step-num">4</span>
+                <span class="step-label">Capture</span>
+            </div>
+        </div>
+
+        <!-- System log with Caesar cipher clue -->
+        <div class="terminal-window">
+            <div class="terminal-bar">
+                <div class="terminal-dots">
+                    <span class="td red"></span>
+                    <span class="td yellow"></span>
+                    <span class="td green"></span>
+                </div>
+                <span class="terminal-title">System Log // /var/log/cryptochain.log</span>
+            </div>
+            <div class="terminal-body">
+                <div class="term-line">
+                    <span class="term-ts">[2026-02-10 03:14:07]</span>
+                    <span class="term-info">INFO</span>
+                    System boot sequence completed.
+                </div>
+                <div class="term-line">
+                    <span class="term-ts">[2026-02-10 03:14:08]</span>
+                    <span class="term-info">INFO</span>
+                    Authentication service started on port 5000.
+                </div>
+                <div class="term-line">
+                    <span class="term-ts">[2026-02-10 03:14:09]</span>
+                    <span class="term-warn-text">WARN</span>
+                    Plaintext cookie auth detected. Consider upgrading.
+                </div>
+                <div class="term-line">
+                    <span class="term-ts">[2026-02-10 03:15:22]</span>
+                    <span class="term-info">INFO</span>
+                    Admin session initialized.
+                </div>
+                <div class="term-line highlight">
+                    <span class="term-ts">[2026-02-10 03:15:23]</span>
+                    <span class="term-danger-text">SECRET</span>
+                    <span class="cipher-text">{{ caesar_cipher }}</span>
+                </div>
+                <div class="term-line">
+                    <span class="term-ts">[2026-02-10 03:15:24]</span>
+                    <span class="term-info">INFO</span>
+                    End of log.
+                </div>
+            </div>
+        </div>
+
+        <!-- Hint for Stage 3 -->
+        <div class="hint-banner cipher-hint">
+            <i class="ph ph-detective"></i>
+            <div>
+                <span>Stage 3: The highlighted log entry contains an encrypted message.</span>
+                <br>
+                <span class="hint-detail">
+                    The emperor's favorite shift was <strong>3</strong>.
+                    Try a Caesar cipher decoder: <a href="https://www.dcode.fr/caesar-cipher" target="_blank"
+                        rel="noopener">dcode.fr/caesar-cipher</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="btn-row">
+            <a href="{{ url_for('dashboard') }}" class="btn-ghost">
+                <i class="ph ph-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn-ghost">
+                <i class="ph ph-sign-out"></i>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
