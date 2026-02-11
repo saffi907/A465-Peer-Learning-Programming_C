@@ -19,6 +19,7 @@ from flask import (
 
 app = Flask(__name__)
 app.secret_key = "SUPERSECRETKEY_d3v_0nly"
+app.config["FLAG_PATH"] = "secret/flag.txt"
 
 # Simulated "database" of registered users
 USERS = {
@@ -50,7 +51,6 @@ def api_debug():
             "password": "admin_p@ss!",
         },
         "hidden_endpoint": "/register",
-        "flag_path": FLAG_PATH,
         "note": "TODO: remove this endpoint before production deployment",
     })
 

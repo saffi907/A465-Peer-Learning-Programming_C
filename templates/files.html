@@ -80,9 +80,9 @@
         <i class="ph ph-lightbulb"></i>
         <span>Stage 4: Notice the <code>?name=</code> parameter in the URL.
             The server reads files from a directory using this parameter. What if
-            you change it to traverse up? Try
-            <code>../secret/flag.txt</code> as the filename. The developer never
-            sanitized the path.</span>
+            you change it to traverse outside that directory using <code>../</code>
+            sequences? If you completed Stage 3, you already know where the
+            target file is located.</span>
     </div>
 </section>
 {% endblock %}
