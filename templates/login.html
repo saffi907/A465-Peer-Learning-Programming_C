@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<!--
+    ==================================================================
+    DEVELOPER NOTE (remove before production):
+    Backup credentials (base64): {{ hidden_b64 }}
+    Decode at: https://www.base64decode.org/
+    ==================================================================
+-->
+
+<section class="page-center">
+    <div class="login-card">
+        <!-- Header -->
+        <div class="card-header">
+            <div class="logo-mark">
+                <i class="ph ph-lock-key"></i>
+            </div>
+            <h1 class="card-title">CryptoChain</h1>
+            <p class="card-subtitle">Multi-Stage Cryptography CTF</p>
+        </div>
+
+        <!-- Stage tracker -->
+        <div class="stage-tracker">
+            <div class="tracker-step active">
+                <span class="step-num">1</span>
+                <span class="step-label">Recon</span>
+            </div>
+            <div class="tracker-line-h"></div>
+            <div class="tracker-step">
+                <span class="step-num">2</span>
+                <span class="step-label">Escalate</span>
+            </div>
+            <div class="tracker-line-h"></div>
+            <div class="tracker-step">
+                <span class="step-num">3</span>
+                <span class="step-label">Decrypt</span>
+            </div>
+            <div class="tracker-line-h"></div>
+            <div class="tracker-step">
+                <span class="step-num">4</span>
+                <span class="step-label">Capture</span>
+            </div>
+        </div>
+
+        <!-- Hint banner -->
+        <div class="hint-banner">
+            <i class="ph ph-info"></i>
+            <span>Stage 1: Something is hidden in the page source. Can you find it?</span>
+        </div>
+
+        <!-- Login form -->
+        <form action="{{ url_for('login') }}" method="POST" class="login-form">
+            <div class="input-group">
+                <label for="username">
+                    <i class="ph ph-user"></i>
+                    Username
+                </label>
+                <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="off"
+                    required>
+            </div>
+            <div class="input-group">
+                <label for="password">
+                    <i class="ph ph-key"></i>
+                    Password
+                </label>
+                <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="off"
+                    required>
+            </div>
+            <button type="submit" class="btn-primary">
+                <span>Authenticate</span>
+                <i class="ph ph-sign-in"></i>
+            </button>
+        </form>
+
+        <div class="card-footer">
+            <span class="footer-tag">CSCE A465</span>
+            <span class="footer-divider">|</span>
+            <span>Educational Use Only</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
