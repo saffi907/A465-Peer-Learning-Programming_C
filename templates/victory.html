@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Victory{% endblock %}
+
+{% block content %}
+<section class="page-center">
+    <div class="victory-card">
+        <!-- Confetti-style accent -->
+        <div class="victory-glow" aria-hidden="true"></div>
+
+        <!-- Header -->
+        <div class="card-header">
+            <div class="logo-mark victory-mark">
+                <i class="ph ph-trophy"></i>
+            </div>
+            <h1 class="card-title victory-title">Mission Complete</h1>
+            <p class="card-subtitle">You decoded every layer. The chain is broken.</p>
+        </div>
+
+        <!-- All stages completed -->
+        <div class="stage-tracker">
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Recon</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Escalate</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Decrypt</span>
+            </div>
+            <div class="tracker-line-h done"></div>
+            <div class="tracker-step completed">
+                <span class="step-num"><i class="ph ph-check"></i></span>
+                <span class="step-label">Capture</span>
+            </div>
+        </div>
+
+        <!-- Captured flag -->
+        <div class="flag-reveal">
+            <span class="flag-label">Captured Flag</span>
+            <span class="flag-value">{{ flag }}</span>
+        </div>
+
+        <!-- Attack chain recap -->
+        <div class="recap-section">
+            <h2 class="recap-title">
+                <i class="ph ph-list-checks"></i>
+                Attack Chain Recap
+            </h2>
+            <div class="recap-grid">
+                <div class="recap-card">
+                    <div class="recap-num">01</div>
+                    <div class="recap-info">
+                        <h3>Information Disclosure</h3>
+                        <p>Base64-encoded credentials hidden in an HTML comment.</p>
+                        <span class="recap-fix">Fix: Remove sensitive data from source code and comments.</span>
+                    </div>
+                </div>
+                <div class="recap-card">
+                    <div class="recap-num">02</div>
+                    <div class="recap-info">
+                        <h3>Broken Access Control</h3>
+                        <p>Role stored in a plaintext cookie, trivially editable by the user.</p>
+                        <span class="recap-fix">Fix: Use server-side sessions or signed tokens for authorization.</span>
+                    </div>
+                </div>
+                <div class="recap-card">
+                    <div class="recap-num">03</div>
+                    <div class="recap-info">
+                        <h3>Security Through Obscurity</h3>
+                        <p>Sensitive endpoint protected only by a weak Caesar cipher "hint."</p>
+                        <span class="recap-fix">Fix: Require proper authentication on all endpoints. Never rely on URL
+                            secrecy.</span>
+                    </div>
+                </div>
+                <div class="recap-card">
+                    <div class="recap-num">04</div>
+                    <div class="recap-info">
+                        <h3>Weak Data Encoding</h3>
+                        <p>Flag "encrypted" with hex encoding, which is trivially reversible.</p>
+                        <span class="recap-fix">Fix: Use real encryption (AES-256) for sensitive data. Encoding is not
+                            encryption.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="btn-row center">
+            <a href="{{ url_for('index') }}" class="btn-primary">
+                <i class="ph ph-arrow-counter-clockwise"></i>
+                <span>Play Again</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
