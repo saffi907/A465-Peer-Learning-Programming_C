@@ -1,5 +1,5 @@
 """
-VulnChain -- Browser-Only Software Vulnerability CTF
+Bypass -- Browser-Only Software Vulnerability CTF
 CSCE A465 -- Computer & Network Security
 
 WARNING: This application is INTENTIONALLY VULNERABLE.
@@ -42,7 +42,7 @@ FILES_DIR = os.path.join(os.path.dirname(__file__), "public_files")
 def api_debug():
     """Debug endpoint that should have been removed before production."""
     return jsonify({
-        "app_name": "VulnChain Internal Portal",
+        "app_name": "Bypass Internal Portal",
         "version": "0.9.3-dev",
         "debug": True,
         "hidden_endpoint": "/register",
@@ -244,7 +244,7 @@ if __name__ == "__main__":
             f.write(FLAG_TEXT)
 
     print("\n" + "=" * 60)
-    print("  VulnChain -- Browser-Only Software Vulnerability CTF")
+    print("  Bypass -- Browser-Only Software Vulnerability CTF")
     print("  http://127.0.0.1:5000")
     print("=" * 60)
     print("  [!] This app is intentionally insecure.")
