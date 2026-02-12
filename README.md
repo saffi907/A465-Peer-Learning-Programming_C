@@ -1,4 +1,4 @@
-# VulnChain -- Browser-Only Software Vulnerability CTF
+# Bypass -- Browser-Only Software Vulnerability CTF
 
 > A deliberately vulnerable Flask app for **CSCE A465 -- Computer & Network Security**.
 > Every vulnerability is exploitable using only a web browser and free online tools.
@@ -15,7 +15,7 @@ python app.py
 
 Open **http://127.0.0.1:5000** in your browser.
 
-## Attack Chain Walkthrough
+## Attack Chain
 
 ```
 +-------------------+     +-------------------+     +--------------------+     +------------------+
@@ -32,7 +32,7 @@ Open **http://127.0.0.1:5000** in your browser.
 2. Open DevTools (F12) and go to the **Sources** tab.
 3. Open `app.js` and find the comment revealing `/api/debug`.
 4. Visit `http://127.0.0.1:5000/api/debug` in your browser.
-5. The JSON response leaks the secret key, database credentials, and a hidden endpoint: `/register`.
+5. The JSON response leaks a hidden endpoint: `/register`.
 
 **Vulnerability:** Debug/development endpoints left in production code.
 
@@ -52,13 +52,13 @@ Open **http://127.0.0.1:5000** in your browser.
 2. In the announcement box, type `{{ 7*7 }}` and submit.
 3. If you see `49` in the rendered output, the server is executing your template code.
 4. Type `{{ config.items() }}` to dump the server's configuration.
-5. Look for `FLAG_PATH` in the output -- it reveals `secret/flag.txt`.
+5. Look for `FLAG_PATH` and `FILES_ENDPOINT` in the output.
 
 **Vulnerability:** User input passed directly to `render_template_string()` without sanitization.
 
 ### Stage 4: Path Traversal
 
-1. Go to the **File Browser** from the dashboard.
+1. Go to the file browser URL you found in Stage 3 (`/files`).
 2. Notice the URL uses `?name=filename` to load files.
 3. Change the URL to: `/files?name=../secret/flag.txt`
 4. The server reads the flag file and displays its contents.
