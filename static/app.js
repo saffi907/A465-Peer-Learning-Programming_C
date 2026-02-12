@@ -1,5 +1,5 @@
 /**
- * VulnChain -- Frontend Utilities
+ * Bypass -- Frontend Utilities
  * Internal portal script
  */
 
