@@ -1,5 +1,5 @@
 /* ============================================================
-   VULNCHAIN // BROWSER-ONLY SOFTWARE VULNERABILITY CTF
+   BYPASS // BROWSER-ONLY SOFTWARE VULNERABILITY CTF
    Design: Tech Forward / Dark Terminal / Precision
    ============================================================ */
 
@@ -339,6 +339,10 @@ code {
     margin-top: 0.1rem;
 }
 
+.hint-banner code {
+    white-space: nowrap;
+}
+
 .hint-banner.warn {
     background: var(--amber-dim);
     border-color: rgba(245, 158, 11, 0.25);
@@ -452,6 +456,11 @@ code {
 }
 
 .btn-primary.full-width {
+    width: 100%;
+}
+
+form .btn-primary,
+form .btn-secondary {
     width: 100%;
 }
 
@@ -870,12 +879,16 @@ code {
 .flash-container {
     position: fixed;
     top: 1.5rem;
-    right: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 10000;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.6rem;
     transition: opacity 0.5s;
+    width: max-content;
+    max-width: 90vw;
 }
 
 .flash-msg {
@@ -918,7 +931,8 @@ code {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem;
+    justify-content: center;
+    padding: 2rem 2rem 4rem;
     background:
         radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0, 240, 255, 0.03), transparent),
         radial-gradient(ellipse 40% 30% at 30% 70%, rgba(139, 92, 246, 0.02), transparent);
@@ -926,10 +940,17 @@ code {
 
 .stage-section {
     width: 100%;
-    max-width: 560px;
+    max-width: 480px;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1.5rem;
+}
+
+.stage-section>.login-card,
+.stage-section>.dashboard-card,
+.stage-section>.hint-banner {
+    width: 100%;
 }
 
 /* ---- CARD ICON ---- */
@@ -1005,6 +1026,7 @@ code {
 /* ---- ACTION PANEL ---- */
 .action-panel {
     display: flex;
+    justify-content: center;
     gap: 0.75rem;
     flex-wrap: wrap;
 }
@@ -1025,9 +1047,17 @@ code {
     border-radius: 50%;
 }
 
-.terminal-dot.red { background: #ff5f57; }
-.terminal-dot.yellow { background: #ffbd2e; }
-.terminal-dot.green { background: #28c840; }
+.terminal-dot.red {
+    background: #ff5f57;
+}
+
+.terminal-dot.yellow {
+    background: #ffbd2e;
+}
+
+.terminal-dot.green {
+    background: #28c840;
+}
 
 /* ---- ANNOUNCEMENT (Admin SSTI) ---- */
 .announcement-input {
@@ -1303,6 +1333,10 @@ code {
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 600px) {
+    .layout {
+        padding: 1.5rem 1rem 3rem;
+    }
+
     .page-center {
         padding: 1rem;
     }
@@ -1313,12 +1347,20 @@ code {
         padding: 1.5rem 1.2rem;
     }
 
+    .stage-section {
+        max-width: 100%;
+    }
+
     .tracker-line-h {
         width: 20px;
     }
 
     .step-label {
         font-size: 0.58rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
     }
 
     .recap-card {
