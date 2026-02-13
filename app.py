@@ -8,6 +8,7 @@ WARNING: This application is INTENTIONALLY VULNERABLE.
 
 import os
 import json
+from markupsafe import escape
 from flask import (
     Flask, request, session, redirect, url_for,
     render_template, render_template_string, flash, jsonify,
@@ -34,6 +35,38 @@ FLAG_PATH = "secret/flag.txt"
 # Directory for downloadable files
 FILES_DIR = os.path.join(os.path.dirname(__file__), "public_files")
 
+
+def is_secure():
+    """Check if the app is running in secure mode."""
+    return session.get("secure_mode", False)
+
+
+# ---------------------------------------------------------------------------
+# Secure Mode Toggle
+# ---------------------------------------------------------------------------
+
+@app.route("/toggle-secure")
+def toggle_secure():
+    """Switch between vulnerable and secure mode. Resets the session."""
+    switching_to_secure = not session.get("secure_mode", False)
+    session.clear()
+    session["secure_mode"] = switching_to_secure
+    if switching_to_secure:
+        flash("Switched to secure mode. Try the same exploits again.")
+    else:
+        flash("Switched to vulnerable mode.")
+    return redirect(url_for("index"))
+
+
+# ---------------------------------------------------------------------------
+# Context Processor -- make secure_mode available in all templates
+# ---------------------------------------------------------------------------
+
+@app.context_processor
+def inject_mode():
+    return {"secure_mode": is_secure()}
+
+
 # ---------------------------------------------------------------------------
 # Stage 1  --  Information Disclosure (Debug Endpoint)
 # ---------------------------------------------------------------------------
@@ -41,6 +74,10 @@ FILES_DIR = os.path.join(os.path.dirname(__file__), "public_files")
 @app.route("/api/debug")
 def api_debug():
     """Debug endpoint that should have been removed before production."""
+    # SECURE: endpoint is removed entirely
+    if is_secure():
+        return jsonify({"error": "endpoint not found"}), 404
+
     return jsonify({
         "app_name": "Bypass Internal Portal",
         "version": "0.9.3-dev",
@@ -78,7 +115,9 @@ def login():
 
 @app.route("/logout")
 def logout():
+    secure = session.get("secure_mode", False)
     session.clear()
+    session["secure_mode"] = secure
     flash("Logged out.")
     return redirect(url_for("index"))
 
@@ -91,13 +130,8 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
 
-    # --- THE VULNERABILITY ---
-    # Blindly accept every form field the client sends,
-    # including "role" which is not in the visible form.
-    user_data = {key: val for key, val in request.form.items()}
-
-    username = user_data.get("username", "").strip()
-    password = user_data.get("password", "").strip()
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
 
     if not username or not password:
         flash("Username and password are required.")
@@ -107,12 +141,25 @@ def register():
         flash("Username already taken.")
         return redirect(url_for("register"))
 
-    # Default role is "user", but if the client sent role=admin ...
-    role = user_data.get("role", "user")
+    # SECURE: only accept username and password, ignore everything else
+    if is_secure():
+        role = "user"
+    else:
+        # --- THE VULNERABILITY ---
+        # Blindly accept the "role" field from the client
+        role = request.form.get("role", "user")
 
     USERS[username] = {"password": password, "role": role}
-    flash(f"Account created. You can now log in as '{username}'.")
-    return redirect(url_for("index"))
+
+    # Auto-login after registration
+    session["username"] = username
+    session["role"] = role
+
+    if is_secure() and request.form.get("role"):
+        flash(f"Account created as 'user'. The 'role' field was ignored.")
+    else:
+        flash(f"Welcome, {username}.")
+    return redirect(url_for("dashboard"))
 
 # ---------------------------------------------------------------------------
 # Dashboard
@@ -153,13 +200,17 @@ def announce():
 
     content = request.form.get("content", "")
 
-    # --- THE VULNERABILITY ---
-    # User input is passed directly to render_template_string(),
-    # allowing Jinja2 template expressions to execute on the server.
-    try:
-        rendered = render_template_string(content)
-    except Exception as e:
-        rendered = f"<span class='error'>Template Error: {e}</span>"
+    # SECURE: escape user input instead of rendering as template
+    if is_secure():
+        rendered = str(escape(content))
+    else:
+        # --- THE VULNERABILITY ---
+        # User input is passed directly to render_template_string(),
+        # allowing Jinja2 template expressions to execute on the server.
+        try:
+            rendered = render_template_string(content)
+        except Exception as e:
+            rendered = f"<span class='error'>Template Error: {e}</span>"
 
     return render_template("admin.html",
                            username=session.get("username"),
@@ -190,9 +241,17 @@ def files():
             available = os.listdir(FILES_DIR)
         return render_template("files.html", files=available, content=None)
 
-    # --- THE VULNERABILITY ---
-    # The filename is concatenated directly without sanitization,
-    # allowing directory traversal with ../
+    # SECURE: sanitize the filename to prevent directory traversal
+    if is_secure():
+        safe_name = os.path.basename(name)
+        if safe_name != name:
+            content = f"Access denied. Path traversal detected in '{name}'."
+            return render_template("files.html", files=[], content=content,
+                                   filename=name)
+        name = safe_name
+
+    # --- THE VULNERABILITY (in vulnerable mode) ---
+    # The filename is concatenated directly without sanitization
     filepath = os.path.join(FILES_DIR, name)
 
     try:
