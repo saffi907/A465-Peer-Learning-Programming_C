@@ -97,6 +97,19 @@ Open **http://127.0.0.1:5000** in your browser.
 +-- README.md
 ```
 
+## Secure Mode
+
+After capturing the flag, click **Switch to Secure Mode** on the victory page. This resets your session and patches all 4 vulnerabilities server-side. Try the same attack chain again to see each exploit fail:
+
+| Stage | Vulnerable | Secure |
+|-------|-----------|--------|
+| 1 | `/api/debug` returns config data | `/api/debug` returns 404 |
+| 2 | `role=admin` field is accepted | Extra form fields are ignored |
+| 3 | `{{ 7*7 }}` renders as `49` | Template syntax is escaped as plain text |
+| 4 | `../secret/flag.txt` reads the flag | Path traversal is detected and blocked |
+
+A red/green mode badge on every page shows which mode is active. You can toggle back to vulnerable mode from the login page by visiting `/toggle-secure`.
+
 ## Key Takeaways
 
 1. **Never leave debug endpoints in production.** Remove all development-only routes and use environment variables for configuration.
