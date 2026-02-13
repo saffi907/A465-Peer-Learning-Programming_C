@@ -40,15 +40,19 @@
             <span class="footer-tag">CSCE A465</span>
             <span class="footer-divider">|</span>
             <span>Educational Use Only</span>
+            <span class="footer-divider">|</span>
+            <a href="{{ url_for('toggle_secure') }}" class="footer-link">
+                {% if secure_mode %}Switch to Vulnerable{% else %}Switch to Secure{% endif %}
+            </a>
         </div>
     </div>
 
     <!-- Hint Banner -->
     <div class="hint-banner">
         <i class="ph ph-lightbulb"></i>
-        <span>Stage 1: Every app starts with looking around. Try inspecting
-            this page's source code. Check the <strong>Sources</strong> tab in
-            DevTools (F12) for loaded scripts.</span>
+        <span>Stage 1: Every app starts with looking around. Open DevTools
+            (F12) and check the <strong>Console</strong> tab. Developers
+            sometimes leave debug messages in production.</span>
     </div>
 </section>
 {% endblock %}
