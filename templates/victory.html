@@ -113,6 +113,20 @@
                 </div>
             </div>
         </div>
+
+        {% if not secure_mode %}
+        <div class="action-panel">
+            <a href="{{ url_for('toggle_secure') }}" class="btn-primary">
+                <i class="ph ph-shield-check"></i>
+                <span>Switch to Secure Mode</span>
+            </a>
+        </div>
+        <div class="hint-banner hint-success">
+            <i class="ph ph-info"></i>
+            <span>Try the same attack chain again in secure mode to see how
+                each vulnerability is properly mitigated.</span>
+        </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
