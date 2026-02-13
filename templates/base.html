@@ -13,7 +13,11 @@
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% if secure_mode %}
+    <script src="{{ url_for('static', filename='app.secure.js') }}" defer></script>
+    {% else %}
     <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+    {% endif %}
 </head>
 
 <body>
@@ -41,6 +45,15 @@
                 <span class="step-num">4</span>
                 <span class="step-label">Exfiltrate</span>
             </div>
+        </div>
+
+        <!-- Mode Badge -->
+        <div class="mode-badge {% if secure_mode %}mode-secure{% else %}mode-vuln{% endif %}">
+            {% if secure_mode %}
+            <i class="ph ph-shield-check"></i> SECURE MODE
+            {% else %}
+            <i class="ph ph-warning"></i> VULNERABLE MODE
+            {% endif %}
         </div>
 
         <!-- Flash Messages -->
