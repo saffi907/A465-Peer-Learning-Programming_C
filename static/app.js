@@ -3,11 +3,10 @@
  * Internal portal script
  */
 
-// TODO: remove before production
-// Debug API endpoint: /api/debug
-// Contains sensitive configuration data -- for dev use only
-
 document.addEventListener("DOMContentLoaded", function () {
+    // --- left in by a developer during testing ---
+    console.log("[DEBUG] Health check: /api/debug -- remove before production");
+
     // Flash message auto-dismiss
     const flashMessages = document.querySelectorAll(".flash-message");
     flashMessages.forEach(function (msg) {
