@@ -1,11 +1,11 @@
 /**
- * Bypass -- Frontend Utilities
+ * Bypass: Frontend Utilities
  * Internal portal script
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-    // --- left in by a developer during testing ---
-    console.log("[DEBUG] Health check: /api/debug -- remove before production");
+    // left in by a developer during testing
+    console.log("[DEBUG] Health check: /api/debug, remove before production");
 
     // Flash message auto-dismiss
     const flashMessages = document.querySelectorAll(".flash-message");

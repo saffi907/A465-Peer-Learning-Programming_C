@@ -1,10 +1,10 @@
-# Bypass -- Browser-Only Software Vulnerability CTF
+# Bypass: A Browser-Only Software Vulnerability CTF
 
-> A deliberately vulnerable Flask app for **CSCE A465 -- Computer & Network Security**.
+> A deliberately vulnerable Flask app for **CSCE A465 Computer & Network Security**.
 > Every vulnerability is exploitable using only a web browser and free online tools.
 
-> **WARNING:** This application is intentionally insecure.
-> **DO NOT** deploy this application on any network-accessible host.
+> **WARNING:** This app is intentionally insecure.
+> **DO NOT** run this on any public-facing server.
 
 ## Quick Start
 
@@ -13,111 +13,103 @@ pip install flask
 python app.py
 ```
 
-Open **http://127.0.0.1:5000** in your browser.
+Open **http://127.0.0.1:5000** in your browser and you're good to go.
 
-## Attack Chain
+## How the Attack Chain Works
 
-```
-+-------------------+     +-------------------+     +--------------------+     +------------------+
-| 1. RECON          |---->| 2. ESCALATE       |---->| 3. INJECT          |---->| 4. EXFILTRATE    |
-|                   |     |                   |     |                    |     |                  |
-| JS source reveals |     | Mass assignment   |     | Server-Side        |     | Path traversal   |
-| debug endpoint    |     | adds role=admin   |     | Template Injection |     | reads flag file  |
-+-------------------+     +-------------------+     +--------------------+     +------------------+
-```
+There are 4 stages. Each one builds on the last, you need info from the previous stage to pull off the next one.
 
-### Stage 1: Information Disclosure
+### Stage 1: Poking Around (Info Disclosure)
 
-1. Open the login page at `http://127.0.0.1:5000`.
-2. Open DevTools (F12) and go to the **Sources** tab.
-3. Open `app.js` and find the comment revealing `/api/debug`.
+1. Go to the login page at `http://127.0.0.1:5000`.
+2. Open DevTools (F12) and check the **Sources** tab.
+3. Open `app.js` - there's a comment a dev forgot to take out that mentions `/api/debug`.
 4. Visit `http://127.0.0.1:5000/api/debug` in your browser.
 5. The JSON response leaks a hidden endpoint: `/register`.
 
-**Vulnerability:** Debug/development endpoints left in production code.
+**What went wrong:** A debug endpoint got left in the code and it spills internal info to anyone who finds it.
 
-### Stage 2: Mass Assignment
+### Stage 2: Getting Admin (Mass Assignment)
 
-1. Visit the hidden registration page at `/register`.
+1. Go to the hidden registration page at `/register`.
 2. Open DevTools (F12) and find the `<form>` in the Elements tab.
-3. Add a hidden input: `<input name="role" value="admin">` inside the form.
-4. Fill in a username and password, then submit.
+3. Add a hidden input inside the form: `<input name="role" value="admin">`.
+4. Pick a username and password, then submit.
 5. Log in with your new admin account.
 
-**Vulnerability:** The server blindly accepts all form fields without validating which ones are allowed.
+**What went wrong:** The server just takes whatever fields you send it without checking which ones it should actually accept.
 
-### Stage 3: Server-Side Template Injection (SSTI)
+### Stage 3: Running Code on the Server (SSTI)
 
-1. Navigate to the **Admin Panel** from the dashboard.
+1. Go to the **Admin Panel** from the dashboard.
 2. In the announcement box, type `{{ 7*7 }}` and submit.
-3. If you see `49` in the rendered output, the server is executing your template code.
-4. Type `{{ config.items() }}` to dump the server's configuration.
+3. If you see `49` in the output, that means that the server is running your template code.
+4. Try `{{ config.items() }}` to dump the server config.
 5. Look for `FLAG_PATH` and `FILES_ENDPOINT` in the output.
 
-**Vulnerability:** User input passed directly to `render_template_string()` without sanitization.
+**What went wrong:** User input gets passed straight to `render_template_string()` with no escaping, so the server just runs whatever Jinja2 code you give it.
 
-### Stage 4: Path Traversal
+### Stage 4: Reading the Flag (Path Traversal)
 
 1. Go to the file browser URL you found in Stage 3 (`/files`).
 2. Notice the URL uses `?name=filename` to load files.
 3. Change the URL to: `/files?name=../secret/flag.txt`
-4. The server reads the flag file and displays its contents.
+4. The server reads the flag file and shows you the contents.
 5. Submit the flag to win.
 
-**Vulnerability:** File paths constructed from user input without sanitization, allowing `../` traversal.
+**What went wrong:** The server just sticks user input into a file path with no sanitization, so you can use `../` to escape the intended directory.
 
-## Tools Used
+## What Tools You Need
 
-| Stage | Tool | Purpose |
-|-------|------|---------|
-| 1 | DevTools (Sources tab) | Read JavaScript source code |
-| 1 | Browser URL bar | Visit the debug API endpoint |
-| 2 | DevTools (Elements tab) | Add a hidden form field |
-| 3 | Browser text input | Inject Jinja2 template syntax |
-| 4 | Browser URL bar | Modify the `?name=` parameter |
+Literally just your browser:
+
+- **DevTools Sources tab** - to read the JavaScript source
+- **Browser URL bar** - to visit the debug endpoint and mess with URL params
+- **DevTools Elements tab** - to add a hidden form field
+- **A text input box** - to type Jinja2 template syntax
+
+No Burp Suite, no curl, no terminal needed.
 
 ## Project Structure
 
 ```
 .
-|-- app.py                  # Flask server (all routes + vulnerabilities)
+|-- app.py                  # Flask server (all routes + vulns)
 |-- secret/
-|   +-- flag.txt            # The flag to capture
+|   +-- flag.txt            # The flag you're trying to get
 |-- static/
-|   |-- app.js              # Stage 1: contains debug endpoint hint
-|   +-- style.css           # Dark terminal theme
+|   |-- app.js              # has the debug endpoint hint
+|   +-- style.css           # dark terminal theme
 |-- templates/
-|   |-- base.html           # Shared layout
-|   |-- login.html          # Login page (Stage 1 hint)
-|   |-- register.html       # Hidden registration (Stage 2)
-|   |-- dashboard.html      # User dashboard
-|   |-- admin.html          # Admin panel (Stage 3 SSTI)
-|   |-- files.html          # File browser (Stage 4)
-|   +-- victory.html        # Win screen with recap
+|   |-- base.html           # shared layout
+|   |-- login.html          # login page
+|   |-- register.html       # hidden registration (Stage 2)
+|   |-- dashboard.html      # user dashboard
+|   |-- admin.html          # admin panel (Stage 3)
+|   |-- files.html          # file browser (Stage 4)
+|   +-- victory.html        # win screen with recap
 +-- README.md
 ```
 
-## Secure Mode
+## Secure Mode (the Prevention Mechanism)
 
-After capturing the flag, click **Switch to Secure Mode** on the victory page. This resets your session and patches all 4 vulnerabilities server-side. Try the same attack chain again to see each exploit fail:
+After you capture the flag, hit **Switch to Secure Mode** on the victory page. This resets your session and patches all 4 vulnerabilities on the server side. Try the same attacks again, they'll all fail now:
 
-| Stage | Vulnerable | Secure |
-|-------|-----------|--------|
-| 1 | `/api/debug` returns config data | `/api/debug` returns 404 |
-| 2 | `role=admin` field is accepted | Extra form fields are ignored |
-| 3 | `{{ 7*7 }}` renders as `49` | Template syntax is escaped as plain text |
-| 4 | `../secret/flag.txt` reads the flag | Path traversal is detected and blocked |
+- **Stage 1:** `/api/debug` returns a 404 instead of leaking info
+- **Stage 2:** The server ignores the extra `role` field and only takes username + password
+- **Stage 3:** `{{ 7*7 }}` shows up as plain text instead of getting executed
+- **Stage 4:** Path traversal with `../` gets caught and blocked
 
-A red/green mode badge on every page shows which mode is active. You can toggle back to vulnerable mode from the login page by visiting `/toggle-secure`.
+There's a red/green badge on every page so you can tell which mode you're in. You can toggle back to vulnerable mode from the login page via `/toggle-secure`.
 
-## Key Takeaways
+## What You Should Take Away
 
-1. **Never leave debug endpoints in production.** Remove all development-only routes and use environment variables for configuration.
-2. **Whitelist accepted input fields.** Never blindly accept all client-submitted form data. Explicitly extract only the fields you expect.
-3. **Never pass user input to template engines.** Use `render_template()` with separate template files instead of `render_template_string()`.
-4. **Sanitize all file paths.** Use `os.path.basename()` or an allowlist to prevent directory traversal attacks.
+1. **Don't leave debug stuff in production.** Remove dev-only routes and don't hardcode secrets.
+2. **Only accept the fields you expect.** Don't just blindly take everything a form sends you.
+3. **Don't pass user input to template engines.** Use `render_template()` with actual template files, not `render_template_string()`.
+4. **Clean up file paths.** Use `os.path.basename()` or an allowlist so people can't escape the directory.
 
 ## Acknowledgments
 
-This project was developed for the CSCE A465 Peer Learning Activity at UAA.
-AI tools (Google Gemini) were used to assist in the development of this application.
+Built for the CSCE A465 Peer Learning Activity at UAA.
+AI tools (Google Gemini) were used to help build this.

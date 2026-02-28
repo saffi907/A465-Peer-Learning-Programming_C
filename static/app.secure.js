@@ -1,5 +1,5 @@
 /**
- * Bypass -- Frontend Utilities
+ * Bypass: Frontend Utilities
  * Internal portal script (production)
  */
 

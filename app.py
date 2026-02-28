@@ -1,6 +1,6 @@
 """
-Bypass -- Browser-Only Software Vulnerability CTF
-CSCE A465 -- Computer & Network Security
+Bypass: Browser-Only Software Vulnerability CTF
+CSCE A465 Computer & Network Security
 
 WARNING: This application is INTENTIONALLY VULNERABLE.
          DO NOT deploy on any network-accessible host.
@@ -59,7 +59,7 @@ def toggle_secure():
 
 
 # ---------------------------------------------------------------------------
-# Context Processor -- make secure_mode available in all templates
+# Context Processor, make secure_mode available in all templates
 # ---------------------------------------------------------------------------
 
 @app.context_processor
@@ -68,7 +68,7 @@ def inject_mode():
 
 
 # ---------------------------------------------------------------------------
-# Stage 1  --  Information Disclosure (Debug Endpoint)
+# Stage 1: Information Disclosure (Debug Endpoint)
 # ---------------------------------------------------------------------------
 
 @app.route("/api/debug")
@@ -83,7 +83,7 @@ def api_debug():
         "version": "0.9.3-dev",
         "debug": True,
         "hidden_endpoint": "/register",
-        "note": "TODO: remove this endpoint before production deployment",
+        "note": "TODO: remove this before production",
     })
 
 # ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ def logout():
     return redirect(url_for("index"))
 
 # ---------------------------------------------------------------------------
-# Stage 2  --  Mass Assignment (Registration)
+# Stage 2: Mass Assignment (Registration)
 # ---------------------------------------------------------------------------
 
 @app.route("/register", methods=["GET", "POST"])
@@ -175,7 +175,7 @@ def dashboard():
     return render_template("dashboard.html", username=username, role=role)
 
 # ---------------------------------------------------------------------------
-# Stage 3  --  Server-Side Template Injection (SSTI)
+# Stage 3: Server-Side Template Injection (SSTI)
 # ---------------------------------------------------------------------------
 
 @app.route("/admin")
@@ -218,7 +218,7 @@ def announce():
                            raw_input=content)
 
 # ---------------------------------------------------------------------------
-# Stage 4  --  Path Traversal (File Viewer)
+# Stage 4: Path Traversal (File Viewer)
 # ---------------------------------------------------------------------------
 
 @app.route("/files")
@@ -285,7 +285,7 @@ if __name__ == "__main__":
     # Create dummy files for the file browser
     os.makedirs(FILES_DIR, exist_ok=True)
     dummy_files = {
-        "report.pdf": "Q3 Internal Security Audit -- CONFIDENTIAL\nNo critical vulnerabilities found.\n(This is a dummy file for demonstration.)",
+        "report.pdf": "Q3 Internal Security Audit, CONFIDENTIAL\nNo critical vulnerabilities found.\n(This is a dummy file for demonstration.)",
         "employees.csv": "id,name,department\n1,Alice,Engineering\n2,Bob,Marketing\n3,Charlie,Security",
         "changelog.txt": "v0.9.3 - added admin announcement feature\nv0.9.2 - added file browser\nv0.9.1 - initial release",
     }
@@ -303,7 +303,7 @@ if __name__ == "__main__":
             f.write(FLAG_TEXT)
 
     print("\n" + "=" * 60)
-    print("  Bypass -- Browser-Only Software Vulnerability CTF")
+    print("  Bypass: Browser-Only Software Vulnerability CTF")
     print("  http://127.0.0.1:5000")
     print("=" * 60)
     print("  [!] This app is intentionally insecure.")

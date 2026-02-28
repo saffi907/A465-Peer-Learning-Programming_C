@@ -23,25 +23,24 @@
 
         <!-- Vulnerability Recap -->
         <div class="recap-section">
-            <h2><i class="ph ph-shield-warning"></i> Vulnerability Recap</h2>
+            <h2><i class="ph ph-shield-warning"></i> What Went Wrong (and How to Fix It)</h2>
 
             <div class="recap-item">
                 <div class="recap-header">
                     <span class="recap-stage">Stage 1</span>
-                    <span class="recap-title">Information Disclosure</span>
+                    <span class="recap-title">Info Leak</span>
                 </div>
                 <div class="recap-body">
                     <div class="recap-vuln">
-                        <strong>Vulnerability:</strong> A debug API endpoint
-                        (<code>/api/debug</code>) was left in production,
-                        leaking secret keys, database credentials, and
-                        internal routes.
+                        <strong>Here's what went wrong:</strong> A debug API endpoint
+                        (<code>/api/debug</code>) was left in the code,
+                        leaking secret keys, internal routes, and
+                        stuff that shouldn't be public.
                     </div>
                     <div class="recap-fix">
-                        <strong>Fix:</strong> Remove all debug/development
-                        endpoints before deployment. Store secrets in
-                        environment variables, never in code. Use feature
-                        flags to gate debug functionality.
+                        <strong>How to stop it:</strong> Remove debug
+                        endpoints before deploying. Store secrets in
+                        environment variables, not in code.
                     </div>
                 </div>
             </div>
@@ -53,17 +52,15 @@
                 </div>
                 <div class="recap-body">
                     <div class="recap-vuln">
-                        <strong>Vulnerability:</strong> The registration
-                        handler blindly accepted all form fields, allowing
-                        an attacker to inject a <code>role=admin</code>
-                        parameter and escalate privileges.
+                        <strong>Here's what went wrong:</strong> The registration
+                        form accepted all fields you threw at it, so
+                        you could sneak in <code>role=admin</code>
+                        and the server would just go with it.
                     </div>
                     <div class="recap-fix">
-                        <strong>Fix:</strong> Whitelist accepted input
-                        fields on the server. Only extract the specific
-                        fields you expect (<code>username</code>,
-                        <code>password</code>). Never trust client-submitted
-                        data.
+                        <strong>How to stop it:</strong> Only grab the
+                        fields you actually expect (<code>username</code>,
+                        <code>password</code>). Ignore everything else.
                     </div>
                 </div>
             </div>
@@ -71,21 +68,21 @@
             <div class="recap-item">
                 <div class="recap-header">
                     <span class="recap-stage">Stage 3</span>
-                    <span class="recap-title">Server-Side Template Injection</span>
+                    <span class="recap-title">Template Injection</span>
                 </div>
                 <div class="recap-body">
                     <div class="recap-vuln">
-                        <strong>Vulnerability:</strong> User input was
-                        passed directly to
-                        <code>render_template_string()</code>, allowing
-                        Jinja2 template expressions to execute on the
-                        server and leak configuration secrets.
+                        <strong>Here's what went wrong:</strong> User input
+                        went straight into
+                        <code>render_template_string()</code>, so any
+                        Jinja2 code you typed would just run on the
+                        server and leak config secrets.
                     </div>
                     <div class="recap-fix">
-                        <strong>Fix:</strong> Never pass raw user input to
-                        a template engine. Use <code>render_template()</code>
-                        with separate template files. Escape all user
-                        input. Consider sandboxing the template environment.
+                        <strong>How to stop it:</strong> Don't pass raw user
+                        input to the template engine. Use
+                        <code>render_template()</code> with actual template
+                        files and escape everything.
                     </div>
                 </div>
             </div>
@@ -97,18 +94,17 @@
                 </div>
                 <div class="recap-body">
                     <div class="recap-vuln">
-                        <strong>Vulnerability:</strong> The file browser
-                        concatenated user input directly into a file path
-                        without sanitization, allowing
-                        <code>../</code> sequences to read files outside
-                        the intended directory.
+                        <strong>Here's what went wrong:</strong> The file browser
+                        stuck user input directly into a file path
+                        with no sanitization, so <code>../</code>
+                        let you escape the folder and read files you
+                        shouldn't have access to.
                     </div>
                     <div class="recap-fix">
-                        <strong>Fix:</strong> Sanitize file paths with
+                        <strong>How to stop it:</strong> Use
                         <code>os.path.basename()</code> to strip directory
-                        components. Use an allowlist of permitted files.
-                        Validate that the resolved path stays within the
-                        intended directory.
+                        parts. Or use an allowlist of files that are
+                        okay to serve.
                     </div>
                 </div>
             </div>
